@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Landing Page</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
+</head>
+    
+<body class="index-body">
+
+    <h1>Welcome to the Calendar Sync Application</h1>
+   
+    <a href="{{ url_for('upload_calendar') }}"><button>Go to Calendar Upload</button></a>
+</body>
+</html>

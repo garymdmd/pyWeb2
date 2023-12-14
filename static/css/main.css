@@ -1,0 +1,23 @@
+/* For index.html */
+.index-body {
+    background-image: url('../images/landing_tech.png');
+    background-size: cover;
+    background-position: center center;
+    background-repeat: no-repeat;
+}
+.index-body h1 {
+    color: white;
+    /* Any other styles you want to apply to the h1 on the index page */
+}
+
+/* For upload.html */
+.upload-body {
+    background-image: url('../images/upload_bkg.png');
+    background-size: cover;
+    background-position: center center;
+    background-repeat: no-repeat;
+}
+
+.upload-body h1 {
+    color: #00FF00; /* This is a bright green color in hex */
+}
