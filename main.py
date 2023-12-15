@@ -1,4 +1,7 @@
-from flask import Flask, render_template, request, redirect, url_for, flash
+from flask import Flask, render_template, request, session,redirect, url_for, flash
+from flask_sqlalchemy import SQLAlchemy
+from flask_login import LoginManager, UserMixin, login_user, login_required, logout_user, current_user
+from werkzeug.security import generate_password_hash, check_password_hash
 import os
 from werkzeug.utils import secure_filename
 from google_auth_oauthlib.flow import Flow
@@ -7,7 +10,6 @@ from google.oauth2.credentials import Credentials
 from googleapiclient.discovery import build
 from flask import session, url_for, redirect
 import pandas as pd
-from flask import session, redirect, url_for, flash
 
 # Configure the OAuth flow
 os.environ['OAUTHLIB_INSECURE_TRANSPORT'] = '1'  # ONLY for development!
@@ -15,15 +17,86 @@ CLIENT_SECRETS_FILE = "client_secret_247911754370-9gb3keue4tu2n7b29harrorfs7hosq
 SCOPES = ['https://www.googleapis.com/auth/calendar']
 
 app = Flask(__name__)
-app.secret_key = 'your_secret_key'  # Replace with a real secret key for production
+app.secret_key = os.environ.get('SECRET_KEY')
+#app.secret_key = 'your_secret_key'  # Replace with a real secret key for production
 app.config['UPLOAD_FOLDER'] = 'uploads/'
 app.config['ALLOWED_EXTENSIONS'] = {'xlsx', 'xls'}
+
+#configure sign part:
+app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('DATABASE_URL').replace("://", "ql://", 1) # Heroku uses 'postgres://' but SQLAlchemy expects 'postgresql://'
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+
+db = SQLAlchemy(app)
+login_manager = LoginManager()
+login_manager.init_app(app)
+login_manager.login_view = 'login'
+
+# Define User model
+class User(UserMixin, db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    username = db.Column(db.String(100), unique=True)
+    password = db.Column(db.String(100))
+
+# Create tables
+with app.app_context():
+    db.create_all()
+
+@login_manager.user_loader
+def load_user(user_id):
+    return User.query.get(int(user_id))
+
+
+# Login route
+@app.route('/login', methods=['GET', 'POST'])
+def login():
+    if current_user.is_authenticated:
+        return redirect(url_for('index'))
+    
+    if request.method == 'POST':
+        username = request.form['username']
+        password = request.form['password']
+        user = User.query.filter_by(username=username).first()
+        if user and check_password_hash(user.password, password):
+            login_user(user)
+            next_page = request.args.get('next')
+            return redirect(next_page or url_for('index'))
+        else:
+            flash('Login Unsuccessful. Please check username and password', 'danger')
+    return render_template('login.html')
+
+@app.route('/logout')
+@login_required
+def logout():
+    # Retrieve the path of the uploaded file from the session
+    uploaded_file_path = session.get('uploaded_file_path')
+    
+    # Check if the file path exists in the session
+    if uploaded_file_path:
+        try:
+            # Remove the file using the os module
+            os.remove(uploaded_file_path)
+            flash('Uploaded file has been deleted.')
+        except OSError as e:
+            # The file might not exist or other error occurred during deletion
+            flash('Error deleting the uploaded file - file may not exist.')
+            print(e)
+
+    # Clear all data stored in session
+    session.clear()
+    
+    # Logout user using Flask-Login
+    logout_user()
+    
+    flash('You have been logged out.')
+    return redirect(url_for('login'))
 
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in app.config['ALLOWED_EXTENSIONS']
 
 @app.route('/')
 def index():
+    if not current_user.is_authenticated:
+        return redirect(url_for('login'))
     return render_template('index.html')
 
 
@@ -179,27 +252,6 @@ def upload_gcal():
     flash('Events successfully uploaded to Google Calendar')
     return redirect(url_for('upload_calendar'))
 
-
-@app.route('/logout')
-def logout():
-    # Retrieve the path of the uploaded file from the session
-    uploaded_file_path = session.get('uploaded_file_path')
-    
-    # Check if the file path exists in the session
-    if uploaded_file_path:
-        try:
-            # Remove the file using the os module
-            os.remove(uploaded_file_path)
-            flash('Uploaded file has been deleted.')
-        except OSError as e:
-            # The file might not exist or other error occurred during deletion
-            flash('Error deleting the uploaded file - file is not there.')
-            print(e)
-    
-    # Clear all data stored in session
-    session.clear()
-    flash('You have been logged out.')
-    return redirect(url_for('index'))
 
 
 
