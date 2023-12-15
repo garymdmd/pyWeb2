@@ -21,3 +21,25 @@
 .upload-body h1 {
     color: #00FF00; /* This is a bright green color in hex */
 }
+.button-like-link {
+    display: inline-block;
+    padding: 10px 15px;
+    font-size: 16px;
+    cursor: pointer;
+    text-align: center;
+    text-decoration: none;
+    outline: none;
+    color: #fff;
+    background-color: #4CAF50;
+    border: none;
+    border-radius: 15px;
+    box-shadow: 0 9px #999;
+}
+
+.button-like-link:hover {background-color: #3e8e41}
+
+.button-like-link:active {
+    background-color: #3e8e41;
+    box-shadow: 0 5px #666;
+    transform: translateY(4px);
+}

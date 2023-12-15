@@ -14,6 +14,7 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_login import UserMixin
 from flask_migrate import Migrate
 from flask.cli import with_appcontext
+from flask_login import login_required, current_user
 
 
 
@@ -84,7 +85,7 @@ def login():
             # Debug print statement
             print(f"User found in DB: {user.username}")
             
-        if user and check_password_hash(user.password, password):
+        if user and check_password_hash(user.password_hash, password):
             
             # Debug print statement
             print("Password check passed")
@@ -284,8 +285,55 @@ def upload_gcal():
     flash('Events successfully uploaded to Google Calendar')
     return redirect(url_for('upload_calendar'))
 
+@app.route('/admin')
+@login_required
+def admin_page():
+        print("Accessing the admin page")
+        if not current_user.is_admin:
+            print("Accessing the admin page")
+            flash('Access denied: You must be an admin to view this page.', 'danger')
+            return redirect(url_for('index'))
+        else:
+            print("User is admin, rendering admin page")  # Debug print
+            # Your logic here...
+            #return render_template('admin.html')
+            users = User.query.all()  # Retrieve all users from the database
+            return render_template('admin.html', users=users)
 
+@app.route('/add_user', methods=['POST'])
+@login_required
+def add_user():
+    if not current_user.is_admin:
+        flash('Access denied: You must be an admin to perform this action.', 'danger')
+        return redirect(url_for('index'))
 
+    username = request.form['username']
+    email = request.form['email']
+    password = request.form['password']
+    is_admin = 'is_admin' in request.form
+
+    hashed_password = generate_password_hash(password)
+    new_user = User(username=username, email=email, password_hash=hashed_password, is_admin=is_admin)
+    
+    db.session.add(new_user)
+    db.session.commit()
+
+    flash('User added successfully.', 'success')
+    return redirect(url_for('admin_page'))
+
+@app.route('/delete_user/<int:user_id>', methods=['POST'])
+@login_required
+def delete_user(user_id):
+    if not current_user.is_admin:
+        flash('Access denied: You must be an admin to perform this action.', 'danger')
+        return redirect(url_for('index'))
+
+    user_to_delete = User.query.get_or_404(user_id)
+    db.session.delete(user_to_delete)
+    db.session.commit()
+
+    flash('User deleted successfully.', 'success')
+    return redirect(url_for('admin_page'))
 
 # Include other routes and functions as necessary
 
