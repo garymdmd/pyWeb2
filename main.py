@@ -73,8 +73,22 @@ def login():
     if request.method == 'POST':
         username = request.form['username']
         password = request.form['password']
+        
+        # Debug print statements
+        print(f"Username entered: {username}")
+        print(f"Password entered: {password}")
+        
         user = User.query.filter_by(username=username).first()
+        
+        if user:
+            # Debug print statement
+            print(f"User found in DB: {user.username}")
+            
         if user and check_password_hash(user.password, password):
+            
+            # Debug print statement
+            print("Password check passed")
+            
             login_user(user)
             next_page = request.args.get('next')
             return redirect(next_page or url_for('index'))
