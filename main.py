@@ -10,6 +10,12 @@ from google.oauth2.credentials import Credentials
 from googleapiclient.discovery import build
 from flask import session, url_for, redirect
 import pandas as pd
+from flask_sqlalchemy import SQLAlchemy
+from flask_login import UserMixin
+from flask_migrate import Migrate
+from flask.cli import with_appcontext
+
+
 
 # Configure the OAuth flow
 os.environ['OAUTHLIB_INSECURE_TRANSPORT'] = '1'  # ONLY for development!
@@ -23,23 +29,35 @@ app.config['UPLOAD_FOLDER'] = 'uploads/'
 app.config['ALLOWED_EXTENSIONS'] = {'xlsx', 'xls'}
 
 #configure sign part:
+app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY')
+
+# uri = os.getenv("DATABASE_URL")  # Get the DATABASE_URL environment variable
+# if uri and uri.startswith("postgres://"):
+#     uri = uri.replace("postgres://", "postgresql://", 1)  # Replace "postgres://" with "postgresql://"
+# uri = uri + "?sslmode=require"  # Append "?sslmode=require" to the URI
+
+# app.config['SQLALCHEMY_DATABASE_URI'] = uri  # Set the SQLALCHEMY_DATABASE_URI configuration
+
 app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('DATABASE_URL').replace("://", "ql://", 1) # Heroku uses 'postgres://' but SQLAlchemy expects 'postgresql://'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 db = SQLAlchemy(app)
+migrate = Migrate(app, db)
 login_manager = LoginManager()
 login_manager.init_app(app)
 login_manager.login_view = 'login'
 
-# Define User model
+# Initialize Flask-Migrate
+migrate = Migrate(app, db)
+
+# Define Models
 class User(UserMixin, db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    username = db.Column(db.String(100), unique=True)
-    password = db.Column(db.String(100))
+    username = db.Column(db.String(100), unique=True, nullable=False)
+    email = db.Column(db.String(100), unique=True, nullable=False)
+    password_hash = db.Column(db.String(200), nullable=False)
+    is_admin = db.Column(db.Boolean, default=False)
 
-# Create tables
-with app.app_context():
-    db.create_all()
 
 @login_manager.user_loader
 def load_user(user_id):
