@@ -1,4 +1,12 @@
 <!-- templates/login.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Upload Calendar</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
+</head>
+<body class="login-body">
 <form method="post">
     <div>
         <label for="username">Username:</label>
@@ -12,3 +20,4 @@
         <button type="submit">Login</button>
     </div>
 </form>
+</body>

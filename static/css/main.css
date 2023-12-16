@@ -18,6 +18,13 @@
     background-repeat: no-repeat;
 }
 
+/* For login.html */
+.login-body {
+    background-image: url('../images/backdrop_med.png');
+    background-size: cover;
+    background-position: center center;
+    background-repeat: no-repeat;
+}
 .upload-body h1 {
     color: #00FF00; /* This is a bright green color in hex */
 }
@@ -42,4 +49,12 @@
     background-color: #3e8e41;
     box-shadow: 0 5px #666;
     transform: translateY(4px);
+}
+.index-body, .upload-body, .login-body {
+    min-height: 100vh; /* vh is the viewport height */
+    /* Your existing styles */
+}
+.index-body, .upload-body, .login-body {
+    background-attachment: fixed;
+    /* Your existing styles */
 }
