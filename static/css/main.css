@@ -134,7 +134,7 @@
 /* Styling for the logo image */
 .logo-container img {
     display: block; /* Display as block to handle spacing */
-    max-height: 50px; /* Maximum height for the logo */
+    max-height: 150px; /* Maximum height for the logo */
     width: auto; /* Maintain aspect ratio */
     margin-bottom: 5px; /* Spacing between the logo and the business name */
 }
