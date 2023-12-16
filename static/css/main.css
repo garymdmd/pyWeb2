@@ -119,3 +119,29 @@
     /* You may want to add a background color that contrasts with white text */
     background-color: #333; /* Example: dark background for visibility */
 }
+/* Positioning the logo container in the upper left corner */
+.logo-container {
+    position: absolute; /* Positioning relative to the nearest positioned ancestor */
+    top: 20px; /* Spacing from the top */
+    left: 20px; /* Spacing from the left */
+    border: 2px solid black; /* Black border around the text box */
+    padding: 10px; /* Spacing inside the box */
+    background-color: rgba(255, 255, 255, 0.5); /* Semi-transparent white background */
+    border-radius: 5px; /* Optional: rounded corners for the text box */
+    z-index: 10; /* Ensures the logo is above other elements */
+}
+
+/* Styling for the logo image */
+.logo-container img {
+    display: block; /* Display as block to handle spacing */
+    max-height: 50px; /* Maximum height for the logo */
+    width: auto; /* Maintain aspect ratio */
+    margin-bottom: 5px; /* Spacing between the logo and the business name */
+}
+
+/* Styling for the business name */
+.logo-container .business-name {
+    color: black; /* Text color for the business name */
+    font-size: 20px; /* Size of the business name text */
+    font-weight: bold; /* Optional: make the business name bold */
+}
