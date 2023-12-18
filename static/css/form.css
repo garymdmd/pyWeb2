@@ -1,0 +1,70 @@
+body {
+    padding: 10px;
+}
+
+* {
+    box-sizing: border-box;
+}
+
+/* For upload.html */
+.upload-body {
+    background-image: url('../images/upload_bkg.png');
+    background-size: cover;
+    background-position: center center;
+    background-repeat: no-repeat;
+}
+.header-box {
+    border: 1px solid #333; /* Replace with your desired border color and width */
+    padding: 10px; /* Add some padding inside the box */
+    border-radius: 10px; /* Rounded corners for the form box */
+    text-align: center; /* Center the text inside the box */
+    width: max-content; /* Adjust the width as needed */
+    background-color: rgba(41, 41, 180, 0.15);
+    justify-content: left;
+}
+  
+
+html, body {
+    margin: 0;
+    height: 100%;
+    font-family: Arial, sans-serif;
+}
+
+.centered-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100vh;
+}
+
+.centered-container > * {
+    margin: 10px 0; /* This applies 10px of margin to the top and bottom of each element */
+}
+
+.centered-form {
+    width: 100%;
+    padding: 20px;
+    display: flex;
+    justify-content: center; /* Center horizontally */
+    width: 100%;
+}
+
+.centered-form form {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+.form-box {
+    /*background: blue; /* Background color for the form */
+    padding: 40px; /* Padding inside the form box */
+    border-radius: 8px; /* Rounded corners for the form box */
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3); /* Shadow for a 3D effect */
+    width: 50%; /* Width of the form box */
+    max-width: 300px; /* Maximum width of the form box */
+    border: 4px solid black; /* Adds a black border around the form box */
+    margin: auto; /* Auto margins for horizontal centering */
+    background-color: rgba(0, 0, 255, 0.4);
+    
+   
+}

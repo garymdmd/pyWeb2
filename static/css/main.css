@@ -1,9 +1,19 @@
+body {
+    padding: 10px;
+}
+
 /* For index.html */
 .index-body {
     background-image: url('../images/clouds_france_vines.png');
     background-size: cover;
     background-position: center center;
     background-repeat: no-repeat;
+}
+/* For admin.html */
+.admin-body {
+    background: linear-gradient(to right, #ff7e5f, #feb47b);
+    height: 100%;
+    margin: 0;
 }
 .index-body h1 {
     color: white;
@@ -72,16 +82,18 @@
     justify-content: center; /* Center horizontally */
     align-items: center; /* Center vertically */
     height: 100vh; /* Full viewport height */
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
 }
 
 .form-box {
-    /*background: blue; /* Background color for the form */
     padding: 40px; /* Padding inside the form box */
     border-radius: 8px; /* Rounded corners for the form box */
     box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3); /* Shadow for a 3D effect */
-    width: 40%; /* Width of the form box */
-    max-width: 300px; /* Maximum width of the form box */
-    border: 2px solid black; /* Adds a black border around the form box */
+    width: 50%; /* Width of the form box */
+    max-width: 500px; /* Maximum width of the form box */
+    border: 4px solid black; /* Adds a black border around the form box */
     margin: auto; /* Auto margins for horizontal centering */
    
 }
@@ -89,6 +101,7 @@
 /* This will ensure that the form itself doesn't inherit the white-text color if not desired */
 .centered-form form {
     color: initial; /* Reset color to default */
+    margin: 10px 0; /* Space out the forms */
 }
 /* Specific width for a smaller form */
 .form-box.small-form {
@@ -122,8 +135,8 @@
 /* Positioning the logo container in the upper left corner */
 .logo-container {
     position: absolute; /* Positioning relative to the nearest positioned ancestor */
-    top: 20px; /* Spacing from the top */
-    left: 20px; /* Spacing from the left */
+    top: 60px; /* Spacing from the top */
+    left: 60px; /* Spacing from the left */
     border: 2px solid black; /* Black border around the text box */
     padding: 10px; /* Spacing inside the box */
     background-color: rgba(255, 255, 255, 0.5); /* Semi-transparent white background */
@@ -144,4 +157,30 @@
     color: black; /* Text color for the business name */
     font-size: 20px; /* Size of the business name text */
     font-weight: bold; /* Optional: make the business name bold */
+}
+
+.centered-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 10px; /* Spacing inside the box */
+    justify-content: center;
+    height: 100vh;
+    border: 4px solid black; /* Adds a black border around the box */
+    max-width: 500px; /* Maximum width of the form box */
+}
+
+.centered-container > * {
+    margin: 10px 0; /* This applies 10px of margin to the top and bottom of each element */
+}
+
+/* Style for individual buttons */
+.centered-container > button {
+    margin: 10px 0; /* Add space between the buttons and the form */
+}
+
+/* If you have specific styles for inputs and buttons within the form, you can add them here */
+.centered-form input[type="file"],
+.centered-form input[type="submit"] {
+    margin: 5px 0; /* Space between form inputs */
 }

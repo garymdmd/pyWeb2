@@ -3,8 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <title>Admin Dashboard</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
 </head>
-<body>
+<body class="admin-body">
     <h1>Admin Dashboard</h1>
     <h2>User List</h2>
     <ul>
@@ -13,18 +14,24 @@
         {% endfor %}
     </ul>
 
-    <h2>Add User</h2>
-    <form action="{{ url_for('add_user') }}" method="post">
-        <input type="text" name="username" placeholder="Username" required>
-        <input type="email" name="email" placeholder="Email" required>
-        <input type="password" name="password" placeholder="Password" required>
-        <input type="checkbox" name="is_admin"> Is Admin?
-        <button type="submit">Add User</button>
-    </form>
-
+    <div class="form-box small-form button-group-form">
+        <h2>Add User</h2>
+        <form action="{{ url_for('add_user') }}" method="post">
+            <input type="text" name="username" placeholder="Username" required>
+            <br><br>
+            <input type="email" name="email" placeholder="Email" required>
+            <br><br>
+            <input type="password" name="password" placeholder="Password" required>
+            <br><br>
+            <input type="checkbox" name="is_admin"> Is Admin?
+            
+            <button type="submit">Add User</button>
+        </form>
+    </div>
 <!-- Inside admin.html -->
 <a href="{{ url_for('index') }}" class="button-like-link">Return to Home Page</a>
-
+ <!-- Add this button for logout and clsoe session -->
+ <button id="logout_button" onclick="window.location.href='{{ url_for('logout') }}'" class="button-like-link">LOGOUT</button>
     
 </body>
 </html>

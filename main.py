@@ -225,7 +225,7 @@ def oauth2callback():
         'client_secret': flow.credentials.client_secret,
         'scopes': flow.credentials.scopes
     }
-
+    flash('User authorized.', 'success')
     return redirect(url_for('upload_calendar'))
 
 
