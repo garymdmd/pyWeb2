@@ -35,6 +35,12 @@ body {
     background-position: center center;
     background-repeat: no-repeat;
 }
+.chat-body {
+    background-image: url('../images/hanging_round.png');
+    background-size: cover;
+    background-position: center center;
+    background-repeat: no-repeat;
+}
 
 /* For login.html */
 .login-body {
@@ -183,4 +189,30 @@ body {
 .centered-form input[type="file"],
 .centered-form input[type="submit"] {
     margin: 5px 0; /* Space between form inputs */
+}
+
+chat-body {
+    font-family: Arial, sans-serif;
+    background-image: url('../images/hanging_round.png');/* Replace with your actual image path */
+    background-size: cover;
+    background-position: center center;
+    background-repeat: no-repeat;
+    margin: 0;
+    padding: 0;
+}
+.container-body {
+    width: 80%;
+    margin: auto;
+    margin-top: 50px;
+}
+#chat-box {
+    background-color: rgba(255, 255, 255, 0.5); /* White background with 90% opacity */
+    border: 1px solid #ccc;
+    padding: 20px;
+    height: 300px;
+    overflow-y: scroll;
+}
+.user-input {
+    width: 100%;
+    padding: 10px;
 }

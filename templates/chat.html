@@ -3,19 +3,17 @@
 <head>
     <meta charset="UTF-8">
     <title>Chat with OpenAI Assistant</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <style>
-        body { font-family: Arial, sans-serif; margin: 0; padding: 0; }
-        .container { width: 80%; margin: auto; margin-top: 50px; }
-        #chat-box { border: 1px solid #ccc; padding: 20px; height: 300px; overflow-y: scroll; }
-        .user-input { width: 100%; padding: 10px; }
-    </style>
+    
+
 </head>
-<body>
-    <div class="container">
+<body class="chat-body">
+    <div class="container-body">
         <div id="chat-box"></div>
         <input type="text" id="user-input" class="user-input" placeholder="Ask a question...">
     </div>
+  
 
     <script>
 
