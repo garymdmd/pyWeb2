@@ -344,6 +344,10 @@ def delete_user(user_id):
     flash('User deleted successfully.', 'success')
     return redirect(url_for('admin_page'))
 
+@app.route('/chat')
+def chat_page():   
+    return render_template('chat.html')
+
 # Include other routes and functions as necessary
 @app.route('/ask', methods=['POST'])
 def ask():
@@ -361,9 +365,8 @@ def ask():
     # Return the answer as a JSON object
     return jsonify({"response": answer})
 
-@app.route('/chat')
-def chat_page():
-    return render_template('chat.html')
+
+
 
 if __name__ == '__main__':
     app.run(debug=True)
