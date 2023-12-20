@@ -17,8 +17,10 @@
             <form action="{{ url_for('admin_page') }}" method="GET">
                 <button type="submit">Admin Dashboard</button>
             </form>
+            <br><br>
         {% endif %}
-    
+      
+        <a href="{{ url_for('chat_page')}}"><button>AI connection</button></a>
 </div>
 </body>
 </html>

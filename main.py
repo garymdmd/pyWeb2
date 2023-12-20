@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, session,redirect, url_for, flash
+from flask import Flask, render_template,jsonify, request, session,redirect, url_for, flash
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager, UserMixin, login_user, login_required, logout_user, current_user
 from werkzeug.security import generate_password_hash, check_password_hash
@@ -15,6 +15,8 @@ from flask_login import UserMixin
 from flask_migrate import Migrate
 from flask.cli import with_appcontext
 from flask_login import login_required, current_user
+import openai
+from openai import OpenAI
 
 
 
@@ -28,6 +30,13 @@ app.secret_key = os.environ.get('SECRET_KEY')
 #app.secret_key = 'your_secret_key'  # Replace with a real secret key for production
 app.config['UPLOAD_FOLDER'] = 'uploads/'
 app.config['ALLOWED_EXTENSIONS'] = {'xlsx', 'xls'}
+
+# Load your OpenAI API key from an environment variable
+app.config['OPENAI_API_KEY'] = os.environ.get('OPENAI_API_KEY', 'default_key_for_development')
+openai.api_key = app.config['OPENAI_API_KEY']
+
+# Preloaded instructions for the assistant
+assistant_instructions = """please be brief and to the point with your repsonses"""
 
 #configure sign part:
 app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY')
@@ -336,6 +345,25 @@ def delete_user(user_id):
     return redirect(url_for('admin_page'))
 
 # Include other routes and functions as necessary
+@app.route('/ask', methods=['POST'])
+def ask():
+    user_input = request.json.get('question')
+    
+    # Combine the instructions with the user's input
+    prompt = assistant_instructions + "\n\n" + user_input
+    
+    # Call the OpenAI API
+    response = openai.completions.create(model="text-davinci-003",
+    prompt=prompt,
+    max_tokens=150)
+    # Extract the text from the API response and strip any leading/trailing whitespace
+    answer = response.choices[0].text.strip()
+    # Return the answer as a JSON object
+    return jsonify({"response": answer})
+
+@app.route('/chat')
+def chat_page():
+    return render_template('chat.html')
 
 if __name__ == '__main__':
     app.run(debug=True)
