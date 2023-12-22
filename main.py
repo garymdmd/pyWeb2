@@ -22,7 +22,7 @@ from openai import OpenAI
 
 # Configure the OAuth flow
 os.environ['OAUTHLIB_INSECURE_TRANSPORT'] = '1'  # ONLY for development!
-CLIENT_SECRETS_FILE = "client_secret_247911754370-9gb3keue4tu2n7b29harrorfs7hosqjb.apps.googleusercontent.com.json"
+CLIENT_SECRETS_FILE = "client_secret_618054310074-jrq0ou08qphacovas42255j5nctad75s.apps.googleusercontent.com.json"
 SCOPES = ['https://www.googleapis.com/auth/calendar']
 
 app = Flask(__name__)
@@ -36,7 +36,7 @@ app.config['OPENAI_API_KEY'] = os.environ.get('OPENAI_API_KEY', 'default_key_for
 openai.api_key = app.config['OPENAI_API_KEY']
 
 # Preloaded instructions for the assistant
-assistant_instructions = """please be brief and to the point with your repsonses"""
+assistant_instructions = """please be brief and to the point with your responses"""
 
 #configure sign part:
 app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY')
@@ -354,16 +354,66 @@ def ask():
     user_input = request.json.get('question')
     
     # Combine the instructions with the user's input
-    prompt = assistant_instructions + "\n\n" + user_input
+    #prompt = assistant_instructions + "\n\n" + user_input
     
     # Call the OpenAI API
-    response = openai.completions.create(model="text-davinci-003",
-    prompt=prompt,
-    max_tokens=150)
-    # Extract the text from the API response and strip any leading/trailing whitespace
-    answer = response.choices[0].text.strip()
-    # Return the answer as a JSON object
+    client = OpenAI()
+    # Assume 'prompt' contains the user's input
+    # And that you maintain a list of messages as the conversation history
+    #message=[{"role": "assistant", "content": gpt_assistant_prompt}, {"role": "user", "content": gpt_user_prompt}]
+    # conversation_history = [{"role": "system", "content": "You are a helpful assistant."}, {"role": "user", "content": prompt}]
+    
+    # response = client.chat.completions.create(
+    #     model="gpt-4-1106-preview",
+    #     messages=conversation_history,
+    #     temperature=0.2,
+    #     max_tokens=150
+    # )
+
+    # Since we're not streaming, we can just take the last response
+    # The last message in the list is the assistant's response
+    #assistant_message = response['choices'][0]['message']['content'].strip()
+    # assistant_message = response.choices[0].message['content'].strip()
+    # print(assistant_message)
+
+    # # Return the answer as a JSON object
+    # return jsonify({"response": assistant_message})
+
+    #test prompt
+    gpt_assistant_prompt = assistant_instructions
+    gpt_user_prompt = user_input
+    #gpt_prompt = gpt_assistant_prompt, gpt_user_prompt
+    #print(gpt_prompt)
+    
+    
+    message=[{"role": "assistant", "content": gpt_assistant_prompt}, {"role": "user", "content": gpt_user_prompt}]
+    temperature=0.2
+    max_tokens=256
+    frequency_penalty=0.0
+
+
+    response = client.chat.completions.create(
+        model="gpt-4",
+        messages = message,
+        temperature=temperature,
+        max_tokens=max_tokens,
+        frequency_penalty=frequency_penalty
+    )
+    
+    answer = response.choices[0].message
+    #print(response.choices[0].message)
+    print(answer)
     return jsonify({"response": answer})
+   # return answer 
+
+
+    # response = openai.completions.create(model="text-davinci-003",
+    # prompt=prompt,
+    # max_tokens=150)
+    # # Extract the text from the API response and strip any leading/trailing whitespace
+    # answer = response.choices[0].text.strip()
+    # # Return the answer as a JSON object
+    # return jsonify({"response": answer})
 
 
 
