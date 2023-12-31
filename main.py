@@ -8,6 +8,7 @@ from google_auth_oauthlib.flow import Flow
 from google.auth.transport.requests import Request
 from google.oauth2.credentials import Credentials
 from googleapiclient.discovery import build
+import gspread
 from flask import session, url_for, redirect
 import pandas as pd
 from flask_sqlalchemy import SQLAlchemy
@@ -17,13 +18,14 @@ from flask.cli import with_appcontext
 from flask_login import login_required, current_user
 import openai
 from openai import OpenAI
-
+import pandas as pd  # Make sure to import pandas
+import traceback
 
 
 # Configure the OAuth flow
 os.environ['OAUTHLIB_INSECURE_TRANSPORT'] = '1'  # ONLY for development!
 CLIENT_SECRETS_FILE = "client_secret_618054310074-jrq0ou08qphacovas42255j5nctad75s.apps.googleusercontent.com.json"
-SCOPES = ['https://www.googleapis.com/auth/calendar']
+SCOPES = ['https://www.googleapis.com/auth/calendar','https://www.googleapis.com/auth/spreadsheets']
 
 app = Flask(__name__)
 app.secret_key = os.environ.get('SECRET_KEY')
@@ -142,6 +144,64 @@ def index():
     return render_template('index.html')
 
 
+@app.route('/upload_gsheets', methods=['POST'])
+def upload_gsheets():
+    if request.method == 'POST':
+        gsheets_url = request.form.get('gsheets_url')  # Retrieve the user-provided URL
+
+        # Authenticate using the stored credentials
+        creds_info = session.get('credentials')
+        if not creds_info:
+            flash('No credentials available. Please authorize first.')
+            return redirect(url_for('authorize'))
+
+        credentials = Credentials(
+            token=creds_info['token'],
+            refresh_token=creds_info['refresh_token'],
+            token_uri=creds_info['token_uri'],
+            client_id=creds_info['client_id'],
+            client_secret=creds_info['client_secret'],
+            scopes=creds_info['scopes']
+        )
+
+        try:
+            # Process the Google Sheets file using gspread
+            gc = gspread.authorize(credentials)
+
+            # Open the Google Sheets document using the user-provided URL
+            sh = gc.open_by_url(gsheets_url)
+
+            # Extract data from the worksheet and create a DataFrame
+            worksheet = sh.sheet1  # or choose a specific sheet
+            data = worksheet.get_all_records()
+            df = pd.DataFrame(data)  # Create a DataFrame from the data
+            
+            #now write to an excel file and save in uploads directory
+            file_path = 'uploads/Cal_intro.xlsx'
+            # Write the DataFrame to an Excel file
+            df.to_excel(file_path, index=False)
+            session['uploaded_file_path'] = file_path
+            #session['uploaded_dataframe'] = df
+            #df_json = df.to_json(orient='split')
+            #session['uploaded_dataframe'] = df_json
+
+            flash('Google Sheets file successfully processed')
+        except Exception as e:
+             # Instead of just flashing the error, print the full traceback to your console or log it
+            print(traceback.format_exc())  # This will print the full traceback
+            flash(f'Error processing Google Sheets file: {str(e)}')
+
+
+        # Stay on the same page or update the page with a message
+        return render_template('upload.html')
+
+    # If it's not a POST request, or if no file was selected,
+    # render the upload page template
+    return render_template('upload.html')
+
+    
+    
+
 @app.route('/upload', methods=['GET', 'POST'])
 def upload_calendar():
     if request.method == 'POST':
@@ -173,15 +233,16 @@ def upload_calendar():
             # Now you store the filepath in the session
             session['uploaded_file_path'] = filepath
             
-            # Add logic to process the file and interact with Google Calendar here
-            flash('File successfully uploaded and processed')
-            
             # Redirect or process the file as needed
-            return redirect(url_for('upload_calendar'))
-    
+            #return redirect(url_for('upload_calendar'))
+            flash('File Uploaded.', 'success')
     # If it's not a POST request, or if no file was selected,
     # render the upload page template
     return render_template('upload.html')
+
+# Define the Google Calendar API version and service name
+# GCALENDAR_API_VERSION = 'v3'
+# GCALENDAR_SERVICE_NAME = 'calendar'
 
 
 
@@ -190,7 +251,7 @@ def authorize():
     # Create a flow instance to manage the OAuth 2.0 Authorization Grant Flow steps
     flow = Flow.from_client_secrets_file(
         CLIENT_SECRETS_FILE,
-        scopes=['https://www.googleapis.com/auth/calendar'],
+        scopes=['https://www.googleapis.com/auth/calendar','https://www.googleapis.com/auth/spreadsheets'],
         redirect_uri=url_for('oauth2callback', _external=True))
 
     authorization_url, state = flow.authorization_url(
@@ -200,7 +261,7 @@ def authorize():
     # Store the state in the session so that the callback can verify the
     # auth server response.
     session['state'] = state
-
+    flash('User authorized.', 'success')
     return redirect(authorization_url)
 
 @app.route('/oauth2callback')
@@ -209,7 +270,7 @@ def oauth2callback():
 
     flow = Flow.from_client_secrets_file(
         CLIENT_SECRETS_FILE,
-        scopes=['https://www.googleapis.com/auth/calendar'],
+        scopes=['https://www.googleapis.com/auth/calendar','https://www.googleapis.com/auth/spreadsheets'],
         state=state,
         redirect_uri=url_for('oauth2callback', _external=True)
     )
@@ -217,15 +278,7 @@ def oauth2callback():
     # Use the authorization server's response to fetch the OAuth 2.0 tokens
     flow.fetch_token(authorization_response=request.url)
 
-    # # Check if the credentials are valid
-    # if flow.credentials and flow.credentials.expired and flow.credentials.refresh_token:
-    #     flow.credentials.refresh(Request())
-    # else:
-    #     # Credentials could not be refreshed, possibly handle this better in production
-    #     return 'Failed to refresh credentials', 401
-
     # Store the credentials in the session.
-    # In production, you should securely store the credentials in a database.
     session['credentials'] = {
         'token': flow.credentials.token,
         'refresh_token': flow.credentials.refresh_token,
@@ -234,7 +287,7 @@ def oauth2callback():
         'client_secret': flow.credentials.client_secret,
         'scopes': flow.credentials.scopes
     }
-    flash('User authorized.', 'success')
+    #flash('User authorized.', 'success')
     return redirect(url_for('upload_calendar'))
 
 
@@ -245,6 +298,12 @@ def upload_gcal():
 
     # Read the Excel file
     df = pd.read_excel(filepath, parse_dates=['date'])
+    # df=session.get('uploaded_dataframe')
+    # df_json = session.get('uploaded_dataframe')
+    # if df_json:
+    #     df = pd.read_json(df_json, orient='split')
+    # print(df)
+    
 
     # Create a list to hold events
     events = []
@@ -358,32 +417,9 @@ def ask():
     
     # Call the OpenAI API
     client = OpenAI()
-    # Assume 'prompt' contains the user's input
-    # And that you maintain a list of messages as the conversation history
-    #message=[{"role": "assistant", "content": gpt_assistant_prompt}, {"role": "user", "content": gpt_user_prompt}]
-    # conversation_history = [{"role": "system", "content": "You are a helpful assistant."}, {"role": "user", "content": prompt}]
-    
-    # response = client.chat.completions.create(
-    #     model="gpt-4-1106-preview",
-    #     messages=conversation_history,
-    #     temperature=0.2,
-    #     max_tokens=150
-    # )
-
-    # Since we're not streaming, we can just take the last response
-    # The last message in the list is the assistant's response
-    #assistant_message = response['choices'][0]['message']['content'].strip()
-    # assistant_message = response.choices[0].message['content'].strip()
-    # print(assistant_message)
-
-    # # Return the answer as a JSON object
-    # return jsonify({"response": assistant_message})
-
     #test prompt
     gpt_assistant_prompt = assistant_instructions
     gpt_user_prompt = user_input
-    #gpt_prompt = gpt_assistant_prompt, gpt_user_prompt
-    #print(gpt_prompt)
     
     
     message=[{"role": "assistant", "content": gpt_assistant_prompt}, {"role": "user", "content": gpt_user_prompt}]
@@ -400,20 +436,15 @@ def ask():
         frequency_penalty=frequency_penalty
     )
     
-    answer = response.choices[0].message
-    #print(response.choices[0].message)
-    print(answer)
-    return jsonify({"response": answer})
-   # return answer 
-
-
-    # response = openai.completions.create(model="text-davinci-003",
-    # prompt=prompt,
-    # max_tokens=150)
-    # # Extract the text from the API response and strip any leading/trailing whitespace
-    # answer = response.choices[0].text.strip()
-    # # Return the answer as a JSON object
-    # return jsonify({"response": answer})
+    # Extract the content from the ChatCompletionMessage
+    # Check if the response contains a message and extract its content
+    if response.choices and response.choices[0].message:
+        assistant_message_content = response.choices[0].message.content  # Access attribute directly
+    else:
+        assistant_message_content = "I'm sorry, I couldn't generate a response."
+    print(assistant_message_content)
+    # Return the answer as a JSON object
+    return jsonify({"response": assistant_message_content})
 
 
 
