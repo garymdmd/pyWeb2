@@ -48,7 +48,9 @@
                     </form>
             </div>
         </div>
-        <a href="{{ url_for('chat_page')}}"><button>AI connection</button></a>
+        <a href="{{ url_for('chat_page')}}"><button>ChatGPT connection</button></a>
+        <a href="{{ url_for('chatgem_page')}}"><button>Gemini connection</button></a>
+
         <!-- Add this button for logout and clsoe session -->
         <button id="logout_button" onclick="window.location.href='{{ url_for('logout') }}'">LOGOUT</button>
    

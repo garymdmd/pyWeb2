@@ -16,10 +16,46 @@ from flask_login import UserMixin
 from flask_migrate import Migrate
 from flask.cli import with_appcontext
 from flask_login import login_required, current_user
+from dotenv import load_dotenv
 import openai
 from openai import OpenAI
+import google.generativeai as genai
 import pandas as pd  # Make sure to import pandas
 import traceback
+
+# Load environment variables from .env file
+load_dotenv()
+
+# Access the API key for
+api_key = os.getenv('GOOGLE_API_KEY')
+genai.configure(api_key=api_key)
+
+# Set up the model
+generation_config = {
+  "temperature": 0.9,
+  "top_p": 1,
+  "top_k": 1,
+  "max_output_tokens": 2048,
+}
+
+safety_settings = [
+  {
+    "category": "HARM_CATEGORY_HARASSMENT",
+    "threshold": "BLOCK_MEDIUM_AND_ABOVE"
+  },
+  {
+    "category": "HARM_CATEGORY_HATE_SPEECH",
+    "threshold": "BLOCK_MEDIUM_AND_ABOVE"
+  },
+  {
+    "category": "HARM_CATEGORY_SEXUALLY_EXPLICIT",
+    "threshold": "BLOCK_MEDIUM_AND_ABOVE"
+  },
+  {
+    "category": "HARM_CATEGORY_DANGEROUS_CONTENT",
+    "threshold": "BLOCK_MEDIUM_AND_ABOVE"
+  },
+]
 
 
 # Configure the OAuth flow
@@ -38,7 +74,7 @@ app.config['OPENAI_API_KEY'] = os.environ.get('OPENAI_API_KEY', 'default_key_for
 openai.api_key = app.config['OPENAI_API_KEY']
 
 # Preloaded instructions for the assistant
-assistant_instructions = """please be brief and to the point with your responses"""
+assistant_instructions = """please be brief and to the point with your responses and if you have more than one point separate them into a numbered list"""
 
 #configure sign part:
 app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY')
@@ -407,6 +443,10 @@ def delete_user(user_id):
 def chat_page():   
     return render_template('chat.html')
 
+@app.route('/chatgem')
+def chatgem_page():   
+    return render_template('gemini.html')
+
 # Include other routes and functions as necessary
 @app.route('/ask', methods=['POST'])
 def ask():
@@ -445,6 +485,36 @@ def ask():
     print(assistant_message_content)
     # Return the answer as a JSON object
     return jsonify({"response": assistant_message_content})
+
+@app.route('/askgem', methods=['POST'])
+def askgem():
+    user_input = request.json.get('question')
+    print(user_input)
+    # Instantiate the model
+    model = genai.GenerativeModel(model_name="gemini-pro",
+                              generation_config=generation_config,
+                              safety_settings=safety_settings)
+  
+    # You can modify the prompt_parts depending on the context of the input
+    prompt_parts = [
+        "You are an assistant. The user asks:",
+        f"{user_input}",
+        "Your response:"
+    ]
+    
+    # Call the Gemini model
+    response = model.generate_content(prompt_parts)
+      
+      # Extract the content from the response
+    if response.text:
+        gemini_message_content = response.text
+    else:
+        gemini_message_content = "I'm sorry, I couldn't generate a response."
+    
+    
+
+       # Return the answer as a JSON object
+    return jsonify({"response": gemini_message_content})
 
 
 

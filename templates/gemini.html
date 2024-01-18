@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Chat with Gemini Assistant</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    
+
+</head>
+<body class="chat-body">
+    <div class="container-body">
+        <div id="chat-box"></div>
+        <input type="text" id="user-input" class="user-input" placeholder="Ask a question...">
+    </div>
+  
+
+    <script>
+
+        $(document).ready(function(){
+            $('#user-input').keypress(function(e){
+                if(e.which == 13){ // Enter key pressed
+                    var question = $('#user-input').val();
+                    $('#user-input').val('');
+                    $('#chat-box').append('<div>User: ' + question + '</div>');
+
+                    // Send the question to the Flask server
+                    $.ajax({
+                        url: '/askgem',
+                        type: 'POST',
+                        contentType: 'application/json',
+                        data: JSON.stringify({ 'question': question }),
+                        success: function(data){
+                            $('#chat-box').append('<div>Assistant: ' + data.response + '</div>');
+                            $('#chat-box').scrollTop($('#chat-box')[0].scrollHeight); // Scroll to bottom
+                        }
+                    });
+                }
+            });
+        });
+    </script>
+</body>
+</html>
