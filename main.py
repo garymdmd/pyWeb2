@@ -1,6 +1,7 @@
 from flask import Flask, render_template,jsonify, request, session,redirect, url_for, flash
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager, UserMixin, login_user, login_required, logout_user, current_user
+from flask_session import Session 
 from werkzeug.security import generate_password_hash, check_password_hash
 import os
 from werkzeug.utils import secure_filename
@@ -25,6 +26,11 @@ import traceback
 
 # Load environment variables from .env file
 load_dotenv()
+
+app = Flask(__name__)
+app.config["SESSION_PERMANENT"] = False
+app.config["SESSION_TYPE"] = "filesystem"
+Session(app)
 
 # Access the API key for
 api_key = os.getenv('GOOGLE_API_KEY')
@@ -455,14 +461,21 @@ def ask():
     # Combine the instructions with the user's input
     #prompt = assistant_instructions + "\n\n" + user_input
     
+    # Initialize conversation history if it doesn't exist
+    if 'conversation' not in session:
+        session['conversation'] = []
+
+    # Append the new user message to the conversation history
+    session['conversation'].append({"role": "user", "content": user_input})
+    print(session['conversation'])
     # Call the OpenAI API
     client = OpenAI()
     #test prompt
     gpt_assistant_prompt = assistant_instructions
     gpt_user_prompt = user_input
     
-    
-    message=[{"role": "assistant", "content": gpt_assistant_prompt}, {"role": "user", "content": gpt_user_prompt}]
+    #message=[{"role": "assistant", "content": gpt_assistant_prompt}, {"role": "user", "content": gpt_user_prompt}]
+    message=session['conversation']
     temperature=0.2
     max_tokens=256
     frequency_penalty=0.0
@@ -480,6 +493,7 @@ def ask():
     # Check if the response contains a message and extract its content
     if response.choices and response.choices[0].message:
         assistant_message_content = response.choices[0].message.content  # Access attribute directly
+        session['conversation'].append({"role": "assistant", "content": assistant_message_content})
     else:
         assistant_message_content = "I'm sorry, I couldn't generate a response."
     print(assistant_message_content)
@@ -489,18 +503,21 @@ def ask():
 @app.route('/askgem', methods=['POST'])
 def askgem():
     user_input = request.json.get('question')
-    print(user_input)
+    #print(user_input)
+     # Start the session for storing the conversation
+    if 'history' not in session:
+        session['history'] = []
+        
+    # Add the new user input to the conversation history
+    session['history'].append(user_input)
+    
     # Instantiate the model
     model = genai.GenerativeModel(model_name="gemini-pro",
                               generation_config=generation_config,
                               safety_settings=safety_settings)
-  
-    # You can modify the prompt_parts depending on the context of the input
-    prompt_parts = [
-        "You are an assistant. The user asks:",
-        f"{user_input}",
-        "Your response:"
-    ]
+     
+    #prompt_parts =[f"{user_input}", "explain the origin of your response"]
+    prompt_parts = session['history'] 
     
     # Call the Gemini model
     response = model.generate_content(prompt_parts)
@@ -508,13 +525,14 @@ def askgem():
       # Extract the content from the response
     if response.text:
         gemini_message_content = response.text
+        session['history'].append(gemini_message_content)
     else:
         gemini_message_content = "I'm sorry, I couldn't generate a response."
-    
-    
+       
 
        # Return the answer as a JSON object
     return jsonify({"response": gemini_message_content})
+
 
 
 
