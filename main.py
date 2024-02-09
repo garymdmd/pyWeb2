@@ -453,6 +453,10 @@ def chat_page():
 def chatgem_page():   
     return render_template('gemini.html')
 
+@app.route('/mind')
+def mind_page():   
+    return render_template('mind.html')
+
 # Include other routes and functions as necessary
 @app.route('/ask', methods=['POST'])
 def ask():
