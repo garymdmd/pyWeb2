@@ -51,7 +51,15 @@
         <a href="{{ url_for('mind_page')}}"><button>Mind Studio connect</button></a>
         <a href="{{ url_for('chat_page')}}"><button>ChatGPT connection</button></a>
         <a href="{{ url_for('chatgem_page')}}"><button>Gemini connection</button></a>
-
+        <!-- Chatbot script -->
+        <script type="module">
+            import Chatbot from "https://cdn.jsdelivr.net/npm/flowise-embed/dist/web.js"
+            Chatbot.init({
+                chatflowid: "34ac599c-85b9-4126-90df-d66e1d0b1787",
+                apiHost: "https://flowise-8uyn.onrender.com",
+            })
+        </script>
+         <!-- Chatbot script end -->
         <!-- Add this button for logout and clsoe session -->
         <button id="logout_button" onclick="window.location.href='{{ url_for('logout') }}'">LOGOUT</button>
    
